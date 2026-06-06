@@ -7,7 +7,6 @@
 #include <grp.h>
 #include <time.h>
 
-#define MAX_PATH_SIZE 4096
 
 typedef struct {
      char **array;
@@ -23,10 +22,10 @@ void initArray(Array *a, size_t initialSize) {
 
 void insertArray(Array *a, char* element) {
      if (a->used == a->size) {
-       a->size *= 2;
+       a->size++;
        a->array = realloc(a->array, a->size * sizeof(char*));
      }
-     a->array[a->used] = malloc(MAX_PATH_SIZE);
+     a->array[a->used] = malloc(255);
      a->array[a->used++] = element;
 }
 
@@ -69,7 +68,7 @@ void mode_string(mode_t mode, char *str) {
 }
 
 void print_long(const char *dir, const char *name) {
-    char fullpath[MAX_PATH_SIZE];
+    char fullpath[4096];
     snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, name);
 
     struct stat st;
