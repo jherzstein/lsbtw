@@ -1,10 +1,51 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+
+#define MAX_PATH_SIZE 4096
+
+typedef struct {
+     char **array;
+     size_t used;
+     size_t size;
+} Array;
+
+void initArray(Array *a, size_t initialSize) {
+     a->array = malloc(initialSize * sizeof(char*));
+     a->used = 0;
+     a->size = initialSize;
+}
+
+void insertArray(Array *a, char* element) {
+     if (a->used == a->size) {
+       a->size *= 2;
+       a->array = realloc(a->array, a->size * sizeof(char*));
+     }
+     a->array[a->used] = malloc(MAX_PATH_SIZE);
+     a->array[a->used++] = element;
+}
+
+void freeArray(Array *a) {
+     free(a->array);
+     a->array = NULL;
+     a->used = a->size = 0;
+}
+
+int sort_string(const void *a, const void *b)
+{
+    char *const *lhs = a;
+    char *const *rhs = b;
+    while(*lhs && !(*lhs - *rhs)) {
+        lhs++;
+	rhs++;
+    }
+    return *lhs - *rhs;
+}
 
 void mode_string(mode_t mode, char *str) {
     if (S_ISDIR(mode))       str[0] = 'd';
@@ -28,7 +69,7 @@ void mode_string(mode_t mode, char *str) {
 }
 
 void print_long(const char *dir, const char *name) {
-    char fullpath[4096];
+    char fullpath[MAX_PATH_SIZE];
     snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, name);
 
     struct stat st;
@@ -90,16 +131,26 @@ int main (int argc, char *argv[]) {
         return 1;
     }
 
+    Array entry_list;
+    initArray(&entry_list, 1);
+
     struct dirent *entry;
     while((entry = readdir(dir)) != NULL) { 
-        if (!show_all && entry->d_name[0] == '.') continue;
+        insertArray(&entry_list, entry->d_name);
+    }
+
+    qsort(entry_list.array, entry_list.size, sizeof(entry_list.array[0]), sort_string);
+    for(size_t i = 0; i < entry_list.used; ++i) {
+        if (!show_all && entry_list.array[i][0] == '.') continue;
         if(long_format) {
-            print_long(path, entry->d_name);
+            print_long(path, entry_list.array[i]);
         }
         else {
-            printf("%s\n", entry->d_name);
+            printf("%s\n", entry_list.array[i]);
         }
     }
+
+    freeArray(&entry_list);
 
     closedir(dir);
     return 0;
