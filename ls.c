@@ -41,7 +41,7 @@ int sort_string(const void *a, const void *b)
     char *const *rhs = b;
     while(*lhs && !(*lhs - *rhs)) {
         lhs++;
-	rhs++;
+        rhs++;
     }
     return *lhs - *rhs;
 }
