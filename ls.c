@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -39,11 +40,7 @@ int sort_string(const void *a, const void *b)
 {
     char *const *lhs = a;
     char *const *rhs = b;
-    while(*lhs && !(*lhs - *rhs)) {
-        lhs++;
-        rhs++;
-    }
-    return *lhs - *rhs;
+    return strcasecmp(*lhs, *rhs);
 }
 
 void mode_string(mode_t mode, char *str) {
