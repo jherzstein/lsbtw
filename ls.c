@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <ctype.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -38,9 +38,23 @@ void freeArray(Array *a) {
 
 int sort_string(const void *a, const void *b)
 {
-    char *const *lhs = a;
-    char *const *rhs = b;
-    return strcasecmp(*lhs, *rhs);
+    char const *lhs = *(const char **)a;
+    char const *rhs = *(const char **)b;
+    while (*lhs || *rhs)
+    {
+        while (*lhs && (ispunct((unsigned char)*lhs) || isspace((unsigned char)*lhs))) {
+            lhs++;
+        }
+        while (*rhs && (ispunct((unsigned char)*rhs) || isspace((unsigned char)*rhs))) {
+            rhs++;
+        }
+        if (*lhs != *rhs) {
+            return tolower((unsigned char)*lhs) - tolower((unsigned char)*rhs);
+        }
+        lhs++;
+        rhs++;
+    }
+    return 0;
 }
 
 void mode_string(mode_t mode, char *str) {
